@@ -43,23 +43,45 @@ def normal_mode(config):
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    end_time = UTCDateTime()
-    start_time = end_time - float(duration) * 60
+    save_file_path = config["save_file"]
+    try:
+        save_file = open(save_file_path, "r")
+        line = save_file.readline()
+        save_file.close()
+        start_time = UTCDateTime(line)
+        end_time = UTCDateTime.now()
+    except Exception:
+        print("Cannot process the provided save file, continuing from the current time")
+        end_time = UTCDateTime.now()
+        start_time = end_time - float(duration) * 60
+
     while True:
-        print("\n--- Starting new download cycle ---")
-        success = download_waveform(start_time, end_time, client, output_dir,
-                                    config["network"], config["station"],
-                                    config["location"], config["channel"])
+        if ((end_time-start_time) >= float(duration) * 60):
+            print("\n--- Starting new download cycle ---")
+            end_time = start_time + float(duration) * 60
+            success = download_waveform(start_time, end_time, client, output_dir,
+                                        config["network"], config["station"],
+                                        config["location"], config["channel"])
 
-        if success:
-            print(f"Sleeping for {duration} minutes...")
-            time.sleep(float(duration) * 60)
-            start_time = end_time  # Move to the next time window
-            end_time = UTCDateTime()
+            if success:
+                save_file = open(save_file_path, "w")
+                timestring = end_time.isoformat()
+                print(timestring, file=save_file)
+                save_file.close()
+                start_time = end_time  # Move to the next time window
+                end_time = UTCDateTime.now()
+                continue
+
+            else:
+                print(f"Retrying in {retry_delay} minutes...")
+                time.sleep(float(retry_delay) * 60)
+                continue
         else:
-            print(f"Retrying in {retry_delay} minutes...")
-            time.sleep(float(retry_delay) * 60)
-
+            duration_sleep = end_time-start_time
+            duration_sleep_min = duration_sleep/60
+            print(f"Sleeping for {duration_sleep_min} minutes...")
+            time.sleep(duration_sleep)
+            end_time = UTCDateTime()
 
 def offline_mode(config):
     """Run the downloader in offline mode for a single request."""
