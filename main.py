@@ -7,25 +7,27 @@ from obspy import UTCDateTime
 
 
 def load_config(config_file):
-    """Load parameters from YAML configuration file."""
+    """
+    Load parameters from YAML configuration file
+    """
     with open(config_file, "r") as file:
         return yaml.safe_load(file)
 
 
 def download_waveform(start_time, end_time, client, output_dir, network, station, location, channel):
     """
-    Download waveform data from the FDSN server and save to a file.
+    Download waveform data from the FDSN server and save to a file
     """
     try:
         print(f"Requesting data from {start_time} to {end_time}")
         st = client.get_waveforms(network=network, station=station, location=location,
                                   channel=channel, starttime=start_time, endtime=end_time)
 
-        # File naming: station_starttime_endtime.mseed
         filename = f"RBF_{station}_{start_time.strftime('%Y%m%d_%H%M%S')}.msd"
         file_path = os.path.join(output_dir, filename)
 
         # Save to file
+        #st.merge(method = 1, fill_value = 0)
         st.write(file_path, format="MSEED")
         print(f"Data saved to {file_path}")
         return True
@@ -35,7 +37,9 @@ def download_waveform(start_time, end_time, client, output_dir, network, station
 
 
 def normal_mode(config):
-    """Run the downloader in continuous mode."""
+    """
+    Run the downloader in continuous mode
+    """
     client = Client(config["server"])
     duration = config["wait"]
     retry_delay = config["retry"]
@@ -43,6 +47,7 @@ def normal_mode(config):
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+    
     save_file_path = config["save_file"]
     try:
         save_file = open(save_file_path, "r")
@@ -50,6 +55,7 @@ def normal_mode(config):
         save_file.close()
         start_time = UTCDateTime(line)
         end_time = UTCDateTime.now()
+
     except Exception:
         print("Cannot process the provided save file, continuing from the current time")
         end_time = UTCDateTime.now()
@@ -68,7 +74,7 @@ def normal_mode(config):
                 timestring = end_time.isoformat()
                 print(timestring, file=save_file)
                 save_file.close()
-                start_time = end_time  # Move to the next time window
+                start_time = end_time
                 end_time = UTCDateTime.now()
                 continue
 
@@ -76,15 +82,18 @@ def normal_mode(config):
                 print(f"Retrying in {retry_delay} minutes...")
                 time.sleep(float(retry_delay) * 60)
                 continue
+
         else:
             duration_sleep = end_time-start_time
             duration_sleep_min = duration_sleep/60
             print(f"Sleeping for {duration_sleep_min} minutes...")
             time.sleep(duration_sleep)
-            end_time = UTCDateTime()
+            end_time = UTCDateTime.now()
 
 def offline_mode(config):
-    """Run the downloader in offline mode for a single request."""
+    """
+    Run the downloader in offline mode for a single request
+    """
     client = Client(config["server"])
     output_dir = config["output_dir"]
 
@@ -98,15 +107,15 @@ def offline_mode(config):
                                 config["network"], config["station"],
                                 config["location"], config["channel"])
     if success:
-        print("Offline download successful!")
+        print("Offline download successful")
     else:
-        print("Offline download failed.")
+        print("Offline download failed")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="FDSN waveform downloader with YAML configuration.")
-    parser.add_argument("--config", type=str, default="config.yaml", help="Path to YAML configuration file.")
-    parser.add_argument("--offline", action="store_true", help="Run in offline mode for a single download.")
+    parser = argparse.ArgumentParser(description="RBF Download Helper")
+    parser.add_argument("--config", type=str, default="config.yaml", help="Path to configuration file")
+    parser.add_argument("--offline", action="store_true", help="Run in offline mode for a single download")
     args = parser.parse_args()
 
     # Load configuration
