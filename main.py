@@ -14,7 +14,7 @@ def load_config(config_file):
         return yaml.safe_load(file)
 
 
-def download_waveform(start_time, end_time, client, output_dir, network, station, location, channel):
+def download_waveform(start_time, end_time, client, output_dir, network, station, location, channel, optional_id = None):
     """
     Download waveform data from the FDSN server and save to a file
     """
@@ -23,7 +23,11 @@ def download_waveform(start_time, end_time, client, output_dir, network, station
         st = client.get_waveforms(network=network, station=station, location=location,
                                   channel=channel, starttime=start_time, endtime=end_time)
 
-        filename = f"RBF_{station}_{start_time.strftime('%Y%m%d_%H%M%S')}.msd"
+        if not optional_id:
+            filename = f"RBF_{station}_{start_time.strftime('%Y%m%d_%H%M%S')}.msd"
+        else:
+            filename = f"RBF_{station}_{optional_id}_{start_time.strftime('%Y%m%d_%H%M%S')}.msd"
+
         file_path = os.path.join(output_dir, filename)
 
         # Save to file
@@ -47,7 +51,7 @@ def normal_mode(config):
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    
+    optional_id = config.get("optional_id")
     save_file_path = config["save_file"]
     try:
         save_file = open(save_file_path, "r")
@@ -67,7 +71,7 @@ def normal_mode(config):
             end_time = start_time + float(duration) * 60
             success = download_waveform(start_time, end_time, client, output_dir,
                                         config["network"], config["station"],
-                                        config["location"], config["channel"])
+                                        config["location"], config["channel"], optional_id)
 
             if success:
                 save_file = open(save_file_path, "w")
@@ -100,12 +104,14 @@ def offline_mode(config):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
+    optional_id = config.get("optional_id")
+
     from_time = UTCDateTime(config["offline"]["from_time"])
     to_time = UTCDateTime(config["offline"]["to_time"])
     print("\n--- Running in offline mode ---")
     success = download_waveform(from_time, to_time, client, output_dir,
                                 config["network"], config["station"],
-                                config["location"], config["channel"])
+                                config["location"], config["channel"], optional_id)
     if success:
         print("Offline download successful")
     else:
