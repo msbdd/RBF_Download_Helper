@@ -26,7 +26,7 @@ def download_waveform(start_time, end_time, client, output_dir, network, station
         if not optional_id:
             filename = f"RBF_{station}_{start_time.strftime('%Y%m%d_%H%M%S')}.msd"
         else:
-            filename = f"RBF_{station}_{optional_id}_{start_time.strftime('%Y%m%d_%H%M%S')}.msd"
+            filename = f"RBF_{optional_id}_{start_time.strftime('%Y%m%d_%H%M%S')}.msd"
 
         file_path = os.path.join(output_dir, filename)
 
