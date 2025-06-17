@@ -63,9 +63,8 @@ def normal_mode(config):
     optional_id = config.get("optional_id")
     save_file_path = config["save_file"]
     try:
-        save_file = open(save_file_path, "r")
-        line = save_file.readline()
-        save_file.close()
+        with open(save_file_path, "r") as save_file:
+            line = save_file.readline()
         start_time = UTCDateTime(line)
         end_time = UTCDateTime.now()
 
@@ -87,10 +86,9 @@ def normal_mode(config):
             )
 
             if success:
-                save_file = open(save_file_path, "w")
-                timestring = end_time.isoformat()
-                print(timestring, file=save_file)
-                save_file.close()
+                with open(save_file_path, "w") as save_file:
+                    timestring = end_time.isoformat()
+                    print(timestring, file=save_file)
                 start_time = end_time
                 end_time = UTCDateTime.now()
                 continue
@@ -103,7 +101,7 @@ def normal_mode(config):
         else:
             duration_sleep = end_time-start_time
             duration_sleep_min = duration_sleep/60
-            print(f"Sleeping for {duration_sleep_min} minutes...")
+            print(f"Sleeping for {duration_sleep_min:.2f} minutes...")
             time.sleep(duration_sleep)
             end_time = UTCDateTime.now()
 

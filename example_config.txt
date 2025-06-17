@@ -1,0 +1,16 @@
+---
+ server: "IP, for example: http://service.iris.edu"
+ output_dir: "C:\\Users\\USERNAME\\Documents\\test"
+ network: "IU"
+ station: "PET"
+ location: "00"
+ channel: "BHZ"
+ wait: "60"
+ retry: "1"
+ save_file: "C:\\Users\\USERNAME\\Documents\\test\\lastdt.txt"
+ #Optional; For a custom file naming
+ optional_id: "01234"
+ offline:
+  from_time: "2024-09-07T12:00:00"
+  to_time: "2024-09-07T12:05:00"
+  
