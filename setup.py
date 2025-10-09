@@ -19,7 +19,7 @@ site_packages = next(p for p in sys.path if 'site-packages' in p)
 dist_info = next(Path(site_packages).glob("obspy-*.dist-info"))
 setup(
     name="RBF_Download_Helper",
-    version="0.1",
+    version="__VERSION__",
     description="RBF_Download_Helper",
     executables=[exe],
     options={
