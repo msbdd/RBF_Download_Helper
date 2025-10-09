@@ -1,4 +1,4 @@
-name: RBF_DOWNLOAD_HELPER Build Windows
+name: RBF_Download_Helper Build Windows
 
 on:
   push:

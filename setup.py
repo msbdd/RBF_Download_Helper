@@ -29,7 +29,7 @@ setup(
                 (str(dist_info), f"lib/{dist_info.name}"),
                 (obsipy_data_dir, "lib/obspy/imaging/data"),
                 ("example_config.txt", "example_config"),
-                ("run_mulpitple.bat", "run_mulpitple.bat"),
+                ("run_multiple.bat", "run_multiple.bat"),
                 ("LICENSE", "LICENSE"),
             ],
             "build_exe": "build/RBF_Download_Helper"
