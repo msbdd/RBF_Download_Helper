@@ -42,10 +42,10 @@ jobs:
         python setup.py build
     - name: Rename build output
       run: |
-        Move-Item build\RBF_Download_Helper ("build\RBF_Download_Helper_" + $env:VERSION)
+        Move-Item build\RBF_Download_Helper ("build\RBF_Download_Helper_" + $env:VERSION + "_Windows")
     - name: Create distribution archive
       run: |
-        Compress-Archive -Path ("build\RBF_Download_Helper_" + $env:VERSION) -DestinationPath ("RBF_Download_Helper_" + $env:VERSION + "_Windows.zip")
+        Compress-Archive -Path ("build\RBF_Download_Helper_" + $env:VERSION + "_Windows") -DestinationPath ("RBF_Download_Helper_" + $env:VERSION + "_Windows.zip")
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v2
       with:

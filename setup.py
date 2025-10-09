@@ -7,7 +7,7 @@ import os
 sys.setrecursionlimit(8000)
 
 exe = Executable(
-    script="main.py",
+    script="RBF_Download_Helper.py",
     base="Console",
 )
 
