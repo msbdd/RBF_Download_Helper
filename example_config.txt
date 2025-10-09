@@ -5,7 +5,7 @@
  station: "PET"
  location: "00"
  channel: "BHZ"
- wait: "60"
+ duration: "60"
  retry: "1"
  save_file: "C:\\Users\\USERNAME\\Documents\\test\\lastdt.txt"
  #Optional; For a custom file naming

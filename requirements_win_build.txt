@@ -1,0 +1,3 @@
+git+https://github.com/msbdd/obspy@dev
+cx_Freeze
+pyyaml

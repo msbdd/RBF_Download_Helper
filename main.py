@@ -4,6 +4,7 @@ import yaml
 import argparse
 from obspy.clients.fdsn import Client
 from obspy import UTCDateTime
+from obspy.clients.fdsn.header import FDSNNoDataException
 
 
 def load_config(config_file):
@@ -43,10 +44,13 @@ def download_waveform(start_time, end_time, client, output_dir,
         # st.merge(method = 1, fill_value = 0)
         st.write(file_path, format="MSEED")
         print(f"Data saved to {file_path}")
-        return True
+        return 0
+    except FDSNNoDataException:
+        print("No data available for the request.")
+        return 204
     except Exception as e:
         print(f"Error downloading data: {e}")
-        return False
+        return -1
 
 
 def normal_mode(config):
@@ -54,7 +58,7 @@ def normal_mode(config):
     Run the downloader in continuous mode
     """
     client = Client(config["server"])
-    duration = config["wait"]
+    duration = config["duration"]
     retry_delay = config["retry"]
     output_dir = config["output_dir"]
 
@@ -78,21 +82,23 @@ def normal_mode(config):
         if ((end_time-start_time) >= float(duration) * 60):
             print("\n--- Starting new download cycle ---")
             end_time = start_time + float(duration) * 60
-            success = download_waveform(
+            result = download_waveform(
                 start_time, end_time, client,
                 output_dir, config["network"],
                 config["station"], config["location"],
                 config["channel"], optional_id
             )
 
-            if success:
+            if result == 0 or result == 204:
+                if result == 204:
+                    print("Forwarding the time window as "
+                          "there is no data available...")
                 with open(save_file_path, "w") as save_file:
                     timestring = end_time.isoformat()
                     print(timestring, file=save_file)
                 start_time = end_time
                 end_time = UTCDateTime.now()
                 continue
-
             else:
                 print(f"Retrying in {retry_delay} minutes...")
                 time.sleep(float(retry_delay) * 60)
