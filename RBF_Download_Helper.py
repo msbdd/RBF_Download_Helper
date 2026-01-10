@@ -105,10 +105,14 @@ def normal_mode(config):
                 continue
 
         else:
-            duration_sleep = end_time-start_time
-            duration_sleep_min = duration_sleep/60
-            print(f"Sleeping for {duration_sleep_min:.2f} minutes...")
-            time.sleep(duration_sleep)
+            target_time = start_time + float(duration) * 60
+            remaining_seconds = target_time - UTCDateTime.now()
+
+            if remaining_seconds > 0:
+                print(f"Window not full. Sleeping for "
+                      f"{remaining_seconds/60:.2f} minutes...")
+                time.sleep(remaining_seconds)
+
             end_time = UTCDateTime.now()
 
 
@@ -127,13 +131,15 @@ def offline_mode(config):
     from_time = UTCDateTime(config["offline"]["from_time"])
     to_time = UTCDateTime(config["offline"]["to_time"])
     print("\n--- Running in offline mode ---")
-    success = download_waveform(
+    result = download_waveform(
         from_time, to_time, client, output_dir,
         config["network"], config["station"],
         config["location"], config["channel"], optional_id
     )
-    if success:
+    if result == 0:
         print("Offline download successful")
+    elif result == 204:
+        print("Offline request returned no data")
     else:
         print("Offline download failed")
 
