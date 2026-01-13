@@ -9,11 +9,12 @@
  retry: "1"
  #Buffer time in seconds to wait after time window completes
  #to ensure data is available on server (default: 30)
- buffer: "30"
+ buffer: "60"
  save_file: "C:\\Users\\USERNAME\\Documents\\test\\lastdt.txt"
  #Optional; For a custom file naming
  optional_id: "01234"
  offline:
   from_time: "2024-09-07T12:00:00"
   to_time: "2024-09-07T12:05:00"
+
  
