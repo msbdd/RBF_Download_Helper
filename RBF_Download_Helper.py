@@ -61,6 +61,12 @@ def normal_mode(config):
     duration = config["duration"]
     retry_delay = config["retry"]
     output_dir = config["output_dir"]
+    # Buffer time (in seconds) to wait after the time window is complete
+    # to ensure data is available on the server
+    buffer_seconds = float(config.get("buffer", 60))
+    if buffer_seconds < 0:
+        print("Warning: buffer cannot be negative, using 0")
+        buffer_seconds = 60
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -106,11 +112,13 @@ def normal_mode(config):
 
         else:
             target_time = start_time + float(duration) * 60
-            remaining_seconds = target_time - UTCDateTime.now()
+            # Add buffer time to ensure data is available on the server
+            remaining_seconds = (target_time + buffer_seconds) - UTCDateTime.now()
 
             if remaining_seconds > 0:
                 print(f"Window not full. Sleeping for "
-                      f"{remaining_seconds/60:.2f} minutes...")
+                      f"{remaining_seconds/60:.2f} minutes "
+                      f"(includes {buffer_seconds}s buffer)...")
                 time.sleep(remaining_seconds)
 
             end_time = UTCDateTime.now()
@@ -163,3 +171,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
