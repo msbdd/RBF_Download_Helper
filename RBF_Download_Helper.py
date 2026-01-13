@@ -113,7 +113,8 @@ def normal_mode(config):
         else:
             target_time = start_time + float(duration) * 60
             # Add buffer time to ensure data is available on the server
-            remaining_seconds = (target_time + buffer_seconds) - UTCDateTime.now()
+            remaining_seconds = (target_time + buffer_seconds) - \
+                UTCDateTime.now()
 
             if remaining_seconds > 0:
                 print(f"Window not full. Sleeping for "
