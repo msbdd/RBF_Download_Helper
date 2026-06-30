@@ -15,6 +15,56 @@ def load_config(config_file):
         return yaml.safe_load(file)
 
 
+def flag_enabled(config, key, default=False):
+    """
+    Interpret a config value as a boolean.
+
+    Config values in this project are typically quoted strings (e.g. "true"),
+    so a plain bool() is not enough: bool("false") is True. Treat the common
+    truthy spellings as enabled and everything else as disabled.
+    """
+    value = config.get(key, default)
+    if isinstance(value, str):
+        return value.strip().lower() in ("true", "1", "yes", "on")
+    return bool(value)
+
+
+def create_client(config):
+    """
+    Create an FDSN client.
+
+    When the optional 'retry_connection' flag is enabled in the config,
+    keep retrying (every 'retry' minutes) until the server can be reached
+    instead of crashing on the first failure.
+    """
+    server = config["server"]
+    timeout = float(config.get("timeout", 120))
+    retry_connection = flag_enabled(config, "retry_connection")
+    retry_delay = float(config.get("retry", 1))
+    attempt = 0
+    while True:
+        attempt += 1
+        try:
+            return Client(server, timeout=timeout)
+        except Exception as e:
+            if not retry_connection:
+                raise
+            print(f"Could not connect to {server} (attempt {attempt}): {e}")
+            print(f"Retrying connection in {retry_delay} minutes...")
+            time.sleep(retry_delay * 60)
+
+
+def reconnect_if_enabled(config, client):
+    """
+    Rebuild the FDSN client after a failure when 'retry_connection' is
+    enabled, so the reconnection re-runs service discovery instead of
+    reusing a possibly stale client. Returns the client to use next.
+    """
+    if flag_enabled(config, "retry_connection"):
+        return create_client(config)
+    return client
+
+
 def download_waveform(start_time, end_time, client, output_dir,
                       network, station, location, channel,
                       optional_id=None):
@@ -57,7 +107,7 @@ def normal_mode(config):
     """
     Run the downloader in continuous mode
     """
-    client = Client(config["server"])
+    client = create_client(config)
     duration = config["duration"]
     retry_delay = config["retry"]
     output_dir = config["output_dir"]
@@ -65,7 +115,7 @@ def normal_mode(config):
     # to ensure data is available on the server
     buffer_seconds = float(config.get("buffer", 60))
     if buffer_seconds < 0:
-        print("Warning: buffer cannot be negative, using 0")
+        print("Warning: buffer cannot be negative, using default (60)")
         buffer_seconds = 60
 
     if not os.path.exists(output_dir):
@@ -108,6 +158,9 @@ def normal_mode(config):
             else:
                 print(f"Retrying in {retry_delay} minutes...")
                 time.sleep(float(retry_delay) * 60)
+                # When retry_connection is enabled, reconnect from scratch
+                # (re-runs service discovery) instead of reusing a stale client.
+                client = reconnect_if_enabled(config, client)
                 continue
 
         else:
@@ -129,7 +182,7 @@ def offline_mode(config):
     """
     Run the downloader in offline mode for a single request
     """
-    client = Client(config["server"])
+    client = create_client(config)
     output_dir = config["output_dir"]
 
     if not os.path.exists(output_dir):
@@ -172,4 +225,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

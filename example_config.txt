@@ -7,8 +7,10 @@
  channel: "BHZ"
  duration: "60"
  retry: "1"
+ retry_connection: "false"
+ timeout: "120"
  #Buffer time in seconds to wait after time window completes
- #to ensure data is available on server (default: 30)
+ #to ensure data is available on server (default: 60)
  buffer: "60"
  save_file: "C:\\Users\\USERNAME\\Documents\\test\\lastdt.txt"
  #Optional; For a custom file naming
