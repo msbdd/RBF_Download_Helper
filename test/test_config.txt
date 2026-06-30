@@ -1,0 +1,16 @@
+---
+ server: "http://service.iris.edu"
+ output_dir: "test_output"
+ network: "IU"
+ station: "PET"
+ location: "00"
+ channel: "BHZ"
+ duration: "60"
+ retry: "1"
+ retry_connection: "false"
+ timeout: "60"
+ save_file: "test_output/lastdt.txt"
+ optional_id: "TEST"
+ offline:
+  from_time: "2024-01-01T00:00:00"
+  to_time: "2024-01-01T00:05:00"
